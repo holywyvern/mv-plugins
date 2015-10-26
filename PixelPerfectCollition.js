@@ -1,7 +1,7 @@
 //=============================================================================
 // Pixel Perfect Colition
 // PixelPerfectColition.js
-// Version: 1.0.0
+// Version: 1.0.1
 //=============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -52,6 +52,8 @@
  * - Returns: true if the sprites are colliding, false otherwise.
  */
 //=============================================================================
+var Imported = Imported || {};
+Imported['PixelPerfectColition'] = '1.0.1';
 
 Sprite.prototype.collitionDataWith = function (sprite) {
   // get the rect of collition
@@ -84,17 +86,17 @@ Sprite.prototype.collidesWith = function (sprite /*, alpha  */) {
   }
   var rect = data.rect;
   var alpha = arguments.length > 1 ? arguments[1] : 1;
-  var p1, p2, a, b;
+  var p1, p2, a1, b1, a2, b2;
   var ex = rect.width + rect.x;
   var ey = rect.height + rect.y;
   for (var i = rect.x; i < ex; ++i) {
+    a1 = i - data.p1.x + this._frame.x;
+    a2 = i - data.p2.x + sprite._frame.x;
     for (var j = rect.y; j < ey; ++j) {
-      a = i - data.p1.x + this._frame.x;
-      b = j - data.p1.y + this._frame.y;
-      p1 = this.bitmap.getAlphaPixel(a, b);
-      a = i - data.p2.x + sprite._frame.x;
-      b = j - data.p2.y + sprite._frame.y;
-      p2 = sprite.bitmap.getAlphaPixel(a, b);
+      b1 = j - data.p1.y + this._frame.y;
+      p1 = this.bitmap.getAlphaPixel(a1, b1);
+      b2 = j - data.p2.y + sprite._frame.y;
+      p2 = sprite.bitmap.getAlphaPixel(a2, b2);
       if (Number(p1) > 0 && Number(p2) > 0) {
         return true;
       }
