@@ -262,6 +262,29 @@ var D$E = (function (oldD$E) {
     }
   };
 
+  $.mouse = new Point(0, 0);
+
+  (function () { // must protect from pollution
+
+    function _onMouseMove(event) {
+      $.mouse.x = Graphics.pageToCanvasX(event.pageX);
+      $.mouse.y = Graphics.pageToCanvasY(event.pageY);
+    };
+
+
+    function _onTouchMove(event) {
+      for (var i = 0; i < event.changedTouches.length; i++) {
+        var touch = event.changedTouches[i];
+        $.mouse.x = Graphics.pageToCanvasX(touch.pageX);
+        $.mouse.y = Graphics.pageToCanvasY(touch.pageY);
+      }
+    };
+
+    document.addEventListener('mousemove', _onMouseMove);
+    document.addEventListener('touchmove', _onTouchMove);
+
+  })();
+
 
   return $;
 
