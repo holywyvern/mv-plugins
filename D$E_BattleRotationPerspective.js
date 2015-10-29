@@ -101,19 +101,17 @@ D$E.ensureParameters('D$E_BattleRotationPerspective');
 (function ($) {
   "use strict";
   var editorParams = $.parametersFromSchema(PluginManager.parameters("D$E_BattleRotationPerspective"), {
-    "Starting actor angle": { type:'number' after: $.degToRad },
-    "Ending actor angle"  : { type:'number' after: $.degToRad },
-    "Starting enemy angle": { type:'number' after: $.degToRad },
-    "Ending enemy angle"  : { type:'number' after: $.degToRad },
-    "Horizontal centre"   : { type: 'number', before: $.safeEval },
-    "Vertical centre"     : { type: 'number', before: $.safeEval },
-    "Horizontal radius"   : { type: 'number', before: $.safeEval },
-    "Vertical radius"     : { type: 'number', before: $.safeEval },
+    "Starting actor angle": { type:'number', after: $.degToRad },
+    "Ending actor angle"  : { type:'number', after: $.degToRad },
+    "Starting enemy angle": { type:'number', after: $.degToRad },
+    "Ending enemy angle"  : { type:'number', after: $.degToRad },
+    "Horizontal centre"   : 'function',
+    "Vertical centre"     : 'function',
+    "Horizontal radius"   : 'function',
+    "Vertical radius"     : 'function',
     "Allow Plugin command": { type: 'bool' },
-    "Plugin command name" : { type: 'string', defaultValue: 'BattleRotation' }
-  };
-
-
+    "Plugin command name" : 'string'
+  });
 
   var params = {
     // angles are converted to radians for quicker process.

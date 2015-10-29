@@ -97,7 +97,7 @@ var D$E = (function (oldD$E) {
   }
 
   $.number = function (value, max, min) {
-    var n = Number(n || 0);
+    var n = Number(value || 0);
     if (max !== null && n > max) {
       return max;
     }
@@ -105,6 +105,10 @@ var D$E = (function (oldD$E) {
       return min;
     }
     return n;
+  }
+
+  $.asFunction = function (value) {
+    return Function("return " + value + ';');
   }
 
   $.parseList = function (list, type, separator) {
@@ -120,19 +124,22 @@ var D$E = (function (oldD$E) {
       t = schema.type || null;
       s = schema;
     }
-    v = s.before ? s.before(value): value;
+    v = s.before ? s.before(value) : value;
     switch (t || 'string') {
     case 'bool': case 'boolean':
-      result = $.naturalBoolean(value);
+      result = $.naturalBoolean(v);
       break;
     case 'number': case 'nul':
-      result = $.number(value, s.max || null, s.min || null);
+      result = $.number(v, s.max || null, s.min || null);
       break;
     case 'list': case 'array': case 'arr': case 'ary':
-      result = $.parseList(value, s.of || '', s.separator || s.sep || ',');
+      result = $.parseList(v, s.of || '', s.separator || s.sep || ',');
+      break;
+    case 'function': case 'method': case 'funct': case 'lambda': case 'fun':
+      result = $.asFunction(v);
       break;
     case 'str': case 'string': default:
-      result = value;
+      result = v;
       break;
     }
     if (s.after) {
@@ -144,9 +151,7 @@ var D$E = (function (oldD$E) {
   $.parametersFromSchema = function (editorParameters, schema) {
     var result = {};
     for (var p in schema) {
-      if (Object.hasOwnProperty(p)) {
-        result[p] = $.parseParamType(schema[p], editorParameters[p] || '');
-      }
+      result[p] = $.parseParamType(schema[p], editorParameters[p] || '');
     }
     return result;
   }
