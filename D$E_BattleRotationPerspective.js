@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) BattleRotationPerspective
 // D$E_BattleRotationPerspective.js
-// Version 1.0.0
+// Version 0.1.0
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
