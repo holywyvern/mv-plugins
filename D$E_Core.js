@@ -115,6 +115,16 @@ var D$E = (function (oldD$E) {
     return list.split(separator).map(function (i) { return $.parseParamType(type, i) });
   }
 
+  $.parseHash = function (list, type, separator, keySeparator) {
+    var result = {};
+    function each(i) {
+      var list = i.split(keySeparator);
+      result[list[0].trim()] = $.parseParamType(type, list[1]);
+    };
+    list.split(separator).forEach(each);
+    return result;
+  }
+
   $.parseParamType = function (schema, value) {
     var s, t, v, result;
     if (typeof schema == 'string') {
@@ -137,6 +147,9 @@ var D$E = (function (oldD$E) {
       break;
     case 'function': case 'method': case 'funct': case 'lambda': case 'fun':
       result = $.asFunction(v);
+      break;
+    case 'hash': case 'object': case 'obj':
+      result = $.parseHash(v, s.of || '', s.separator || s.sep || ',', s.pairSeparator || ':' );
       break;
     case 'str': case 'string': default:
       result = v;
