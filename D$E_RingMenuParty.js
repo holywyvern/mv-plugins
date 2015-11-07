@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 /*:
- *@plugindesc Replaces the current scene
+ *@plugindesc Used for any ring menu scene than requires an actor window.
  *
  * @param Icons
  * @desc The set of icon used by the ring menu.
