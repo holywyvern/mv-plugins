@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Menu
 // D$E_RingMenu.js
-// Version 1.0.1
+// Version 1.1.0
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -70,6 +70,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     }
     this.maxRadius = options.radius || new Point(128, 48);
     this._index = options.index || 0;
+    this._helpWindow = null;
     this.startingAngle = options.startingAngle  || 0;
     this._radius = new Point(this.maxRadius.x, this.maxRadius.y);
     this._centre = options.centre || new Point(0, 0);
@@ -141,8 +142,17 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     this.close();
   }
 
+  $.ui.RingMenu.prototype.helpWindow = function () {
+    return this._helpWindow;
+  }
+
+  $.ui.RingMenu.prototype.setHelpWindow = function (window) {
+    this._helpWindow = window;
+  }
+
   $.ui.RingMenu.prototype.addCancelCommand = function () {
     var txt = $.ui.RingMenu.params.cancel;
+    console.log(txt);
     var cmd = new $.ui.RingMenu.Button(this, 'cancel');
     this._setupCommand(cmd, txt, 'cancel', true);
   }
@@ -217,7 +227,6 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
   };
 
   $.ui.RingMenu.prototype.isItemEnabled = function (symbol) {
-    console.log(symbol);
     return !this._disabled[symbol];
   }
 
@@ -306,8 +315,27 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     } else {
       this._refreshValues();
       this._updateInput();
+      this._updateHelpWindow();
     }
     this._updateZIndexes();
+  }
+
+  $.ui.RingMenu.prototype._updateHelpWindow = function () {
+    if (this._helpWindow && this.canProcessHelp()) {
+      this.currentButton().updateHelp(this._helpWindow);
+    }
+  }
+
+  $.ui.RingMenu.prototype.text = function (symbol) {
+    return this._texts[symbol];
+  }
+
+  $.ui.RingMenu.prototype.currentButton = function () {
+    return this._commandButtons[this.index()];
+  }
+
+  $.ui.RingMenu.prototype.canProcessHelp = function () {
+    return this.isActive();
   }
 
   $.ui.RingMenu.prototype.sort = function (a, b) {
@@ -673,8 +701,12 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     this.opacity = this._menu.opacity * (this._menu.isItemEnabled(this._name) ? 1 : 0.5);
   };
 
-  $.ui.RingMenu.readParams = function (name) {
-    var editorParams = $.parametersFromSchema(PluginManager.parameters(name), {
+  $.ui.RingMenu.Button.prototype.updateHelp = function (window) {
+    window.setText(this._menu.text(this._name));
+  }
+
+  $.ui.RingMenu.readParams = function (name, extraParams) {
+    var editorParams = $.parametersFromSchema(PluginManager.parameters(name), $.merge({
       "Icons":         { type:'hash', of: { type:'str', after:  $.parseAsStringOrNumber }  },
       "Centre X":       'function',
       "Centre Y":       'function',
@@ -684,9 +716,10 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
       "Rotation":       'number',
       "Scale Difference": 'number',
       "Show Actor Sprite": 'bool'
-    });
+    }, extraParams || {}));
 
     return {
+      editorParams: editorParams,
       icons:  editorParams.Icons,
       centreX: editorParams["Centre X"],
       centreY: editorParams["Centre Y"],

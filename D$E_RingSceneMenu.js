@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Scene Menu
 // D$E_RingSceneMenu.js
-// Version 1.0.0
+// Version 1.1.0
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -63,6 +63,12 @@
  * @desc Handles if the actor should be shown at the middle of the menu.
  * Default: yes
  * @default yes
+ *
+ * @param Show help window
+ * @desc Select if you want to display the help window or not.
+ * Default: yes.
+ * @default yes
+ *
  * @help
  * =============================================================================
  * * FAQ
@@ -105,7 +111,10 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
   }
 
   var RingMenu = $.ui.RingMenu;
-  var params = RingMenu.readParams('D$E_RingSceneMenu');
+  var params = RingMenu.readParams('D$E_RingSceneMenu', {
+    "Show help window": 'bool'
+  });
+  params.showHelpWindow = params.editorParams["Show help window"];
 
   $.PARAMETERS['RingSceneMenu'] = params;
 
@@ -258,6 +267,7 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
   var oldScene_Menu_popScene     = Scene_Menu.prototype.popScene;
   var oldScene_Menu_update       = Scene_Menu.prototype.update;
   var oldScene_Menu_onPersonalOk = Scene_Menu.prototype.onPersonalOk;
+  var oldScene_Menu_create       = Scene_Menu.prototype.create;
 
   Scene_Menu.prototype.popScene = function () {
     this._commandWindow.close();
@@ -285,7 +295,21 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
   Scene_Menu.prototype.createStatusWindow = function() {
       this._statusWindow = new $.ui.RingMenu.Party(this._windowLayer);
       this.addWindow(this._statusWindow);
-  };
+  }
+
+  Scene_Menu.prototype.create = function() {
+      oldScene_Menu_create.call(this);
+      this.createHelpWindow();
+  }
+
+  Scene_Menu.prototype.createHelpWindow = function () {
+    if (params.showHelpWindow) {
+      this._helpWindow = new Window_Help(1);
+      this.addWindow(this._helpWindow);
+      this._commandWindow.setHelpWindow(this._helpWindow);
+      this._statusWindow.setHelpWindow(this._helpWindow);
+    }
+  }
 
   $.PARAMETERS['RingSceneMenu'] = params;
 

@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Menu Party
 // D$E_RingMenuParty.js
-// Version 1.0.1
+// Version 1.1.0
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -119,7 +119,7 @@ PluginManager.register("D$E_RingMenuParty", "1.0.0", {
   $.ui.RingMenu.Party.prototype._drawCommands = function () {
     var self = this;
     $gameParty.members().forEach(function (member, i) {
-      self.addCommand(member.name, i, true);
+      self.addCommand(member.name(), i, true);
     });
     this.addCancelCommand();
   }

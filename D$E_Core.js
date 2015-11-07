@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Core
 // D$E_Core.js
-// Version 1.0.0
+// Version 1.1.0
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -235,6 +235,22 @@ var D$E = (function (oldD$E) {
     }
   }
 
+  $.copyAttributes = function (src, dst) {
+    for (var p in src) {
+      if (src.hasOwnProperty(p)) {
+        dst[p] = dst[p] || src[p];
+      }
+    }
+  }
+
+  $.merge = function () {
+    var result = {};
+    var length = arguments.length;
+    for (var i = 0; i < length; ++i) {
+      $.copyAttributes(arguments[i], result);
+    }
+    return result;
+  }
 
   if (MVC && MVC.radToDeg) {
     $.radToDeg = MVC.radToDeg;
