@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Core
 // D$E_Core.js
-// Version 0.5.0
+// Version 1.0.0
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -107,26 +107,38 @@ var D$E = (function (oldD$E) {
     return n;
   }
 
+  $.trim = function (value) {
+    return ('' + value).trim();
+  }
+
   $.asFunction = function (value) {
     return Function("return " + value + ';');
   }
 
-  $.parseList = function (list, type, separator) {
-    return list.split(separator).map(function (i) { return $.parseParamType(type, i) });
+  $.parseList = function (list, schema, separator) {
+    return list.split(separator).map(function (i) {
+      return $.parseParamType(schema, i)
+    });
   }
 
-  $.parseHash = function (list, type, separator, keySeparator) {
+  $.parseHash = function (list, schema, separator, keySeparator) {
     var result = {};
     function each(i) {
       var list = i.split(keySeparator);
-      result[list[0].trim()] = $.parseParamType(type, list[1]);
+      result[list[0].trim()] = $.parseParamType(schema, list[1]);
     };
     list.split(separator).forEach(each);
     return result;
   }
 
+  $.parseAsStringOrNumber = function (value) {
+    var t = $.trim(value);
+    return isNaN(t) ? t : Number(value || 0);
+  }
+
   $.parseParamType = function (schema, value) {
-    var s, t, v, result;
+    var s, t, v, result, filter;
+    filter = true;
     if (typeof schema == 'string') {
       t = schema;
       s = {};
@@ -135,7 +147,7 @@ var D$E = (function (oldD$E) {
       s = schema;
     }
     v = s.before ? s.before(value) : value;
-    switch (t || 'string') {
+    switch ((t || 'string').toLowerCase()) {
     case 'bool': case 'boolean':
       result = $.naturalBoolean(v);
       break;
@@ -151,11 +163,13 @@ var D$E = (function (oldD$E) {
     case 'hash': case 'object': case 'obj':
       result = $.parseHash(v, s.of || '', s.separator || s.sep || ',', s.pairSeparator || ':' );
       break;
+    case 'json':
+      result = JSON.parse(v);
     case 'str': case 'string': default:
-      result = v;
+      result = v.trim();
       break;
     }
-    if (s.after) {
+    if (s.after && filter) {
       return s.after(result);
     }
     return result;

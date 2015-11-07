@@ -109,7 +109,7 @@ D$E.ensureParameters('D$E_BattleRotationPerspective');
     "Vertical centre"     : 'function',
     "Horizontal radius"   : 'function',
     "Vertical radius"     : 'function',
-    "Allow Plugin command": { type: 'bool' },
+    "Allow Plugin command": 'bool',
     "Plugin command name" : 'string'
   });
 
