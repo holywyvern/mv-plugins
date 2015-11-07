@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Menu Party
 // D$E_RingMenuParty.js
-// Version 1.0.0
+// Version 1.0.1
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -111,6 +111,7 @@ PluginManager.register("D$E_RingMenuParty", "1.0.0", {
       this._drawCommands();
       this._active = false;
       this._formationMode = false;
+      this._pendingIndex = -1;
   }
 
   MVC.accessor(Window_MenuStatus.prototype, 'formationMode');
@@ -121,6 +122,18 @@ PluginManager.register("D$E_RingMenuParty", "1.0.0", {
       self.addCommand(member.name, i, true);
     });
     this.addCancelCommand();
+  }
+
+  $.ui.RingMenu.prototype.pendingIndex = function () {
+    return this._pendingIndex;
+  }
+
+  $.ui.RingMenu.prototype.redrawItem = function (index) {
+
+  }
+
+  $.ui.RingMenu.prototype.setPendingIndex = function (index) {
+    this._pendingIndex = index;
   }
 
   $.ui.RingMenu.Party.prototype._createButton = function (text, name, enabled, icon) {
@@ -156,7 +169,13 @@ PluginManager.register("D$E_RingMenuParty", "1.0.0", {
 
   $.ui.RingMenu.Party.Button.prototype._updateIconBitmap = function () {
     var pw, ph, sx, sy;
-    var icon = $gameParty.members()[this._menu.indexOf(this._name) ];
+    var index = this._menu.indexOf(this._name);
+    var icon = $gameParty.members()[ index ];
+    if (this._menu.pendingIndex() == index) {
+      this.setColorTone([0, 0, 0, 255]);
+    } else {
+      this.setColorTone([0, 0, 0, 0]);
+    }
     if (icon == this._lastIcon) {
       return;
     }
