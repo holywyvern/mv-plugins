@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Menu
 // D$E_RingMenu.js
-// Version 1.0.0
+// Version 1.0.1
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -217,6 +217,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
   };
 
   $.ui.RingMenu.prototype.isItemEnabled = function (symbol) {
+    console.log(symbol);
     return !this._disabled[symbol];
   }
 
@@ -669,7 +670,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
 
     this.scale.x = 1.0 + (this.y - centre.y) * this._menu.scale / this._menu.maxRadius.y;
     this.scale.y = this.scale.x;
-    this.opacity = this._menu.opacity * (this._menu.isItemEnabled(this._menu) ? 1 : 0.5);
+    this.opacity = this._menu.opacity * (this._menu.isItemEnabled(this._name) ? 1 : 0.5);
   };
 
   $.ui.RingMenu.readParams = function (name) {
