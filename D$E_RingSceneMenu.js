@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Scene Menu
 // D$E_RingSceneMenu.js
-// Version 1.2.0
+// Version 1.2.1
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -270,7 +270,7 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
       this._commandWindow.setHandler('skill',     this._prepareMenu(this.commandPersonal, true));
       this._commandWindow.setHandler('equip',     this._prepareMenu(this.commandPersonal, true));
       this._commandWindow.setHandler('status',    this._prepareMenu(this.commandPersonal, true));
-      this._commandWindow.setHandler('formation', this._prepareMenu(this.commandPersonal, true));
+      this._commandWindow.setHandler('formation', this._prepareMenu(this.commandFormation, true));
       this._commandWindow.setHandler('options',   this._prepareMenu(this.commandOptions));
       this._commandWindow.setHandler('save',      this._prepareMenu(this.commandSave));
       this._commandWindow.setHandler('gameEnd',   this._prepareMenu(this.commandGameEnd));
@@ -284,39 +284,40 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
       self._commandWindow.inverseClose();
       if (openStatus) self._statusWindow.open();
       self._sceneDied = true;
-      self._sceenDieAction =  action.bind(self);
+      self._sceneDieAction =  action.bind(self);
     };
   }
 
-  var oldScene_Menu_popScene         = Scene_Menu.prototype.popScene;
-  var oldScene_Menu_update           = Scene_Menu.prototype.update;
-  var oldScene_Menu_onPersonalOk     = Scene_Menu.prototype.onPersonalOk;
-  var oldScene_Menu_onPersonalCancel = Scene_Menu.prototype.onPersonalCancel;
-  var oldScene_Menu_create           = Scene_Menu.prototype.create;
+  var oldScene_Menu_popScene          = Scene_Menu.prototype.popScene;
+  var oldScene_Menu_update            = Scene_Menu.prototype.update;
+  var oldScene_Menu_onPersonalOk      = Scene_Menu.prototype.onPersonalOk;
+  var oldScene_Menu_onPersonalCancel  = Scene_Menu.prototype.onPersonalCancel;
+  var oldScene_Menu_create            = Scene_Menu.prototype.create;
+  var oldScene_Menu_onFormationCancel = Scene_Menu.prototype.onFormationCancel;
 
   Scene_Menu.prototype.popScene = function () {
     this._commandWindow.close();
     this._sceneDied = true;
-    this._sceenDieAction = oldScene_Menu_popScene.bind(this);
+    this._sceneDieAction = oldScene_Menu_popScene.bind(this);
   }
 
   Scene_Menu.prototype.onPersonalCancel = function () {
     this._statusWindow.close();
     this._commandWindow.open();
     this._sceneDied = true;
-    this._sceenDieAction = oldScene_Menu_onPersonalCancel.bind(this);
+    this._sceneDieAction = oldScene_Menu_onPersonalCancel.bind(this);
   }
 
   Scene_Menu.prototype.onPersonalOk = function() {
     this._sceneDied = true;
     this._statusWindow.inverseClose();
-    this._sceenDieAction = oldScene_Menu_onPersonalOk.bind(this);
+    this._sceneDieAction = oldScene_Menu_onPersonalOk.bind(this);
   };
 
   Scene_Menu.prototype.update = function () {
     if (this._sceneDied) {
       if (this.canCallDieAnimation()) {
-        this._sceenDieAction();
+        this._sceneDieAction();
         this._sceneDied = false;
         return;
       }
@@ -349,6 +350,14 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
       this._helpWindow.opacity = params.helpWindowOpacity();
     }
   }
+
+  Scene_Menu.prototype.onFormationCancel = function() {
+    oldScene_Menu_onFormationCancel.call(this);
+    this._statusWindow.close();
+    this._commandWindow.open();
+    this._sceneDied = true;
+    this._sceneDieAction = this._statusWindow.selectLast.bind(this._statusWindow);
+  };
 
   $.PARAMETERS['RingSceneMenu'] = params;
 

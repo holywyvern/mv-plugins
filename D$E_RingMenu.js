@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Menu
 // D$E_RingMenu.js
-// Version 1.2.0
+// Version 1.3.0
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -176,6 +176,18 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
         this.parent.children.sort(this.sort);
       }
     }
+  };
+
+  $.ui.RingMenu.prototype.redrawItem = function (index) {
+    this._commandButtons[index].redraw();
+  }
+
+  $.ui.RingMenu.prototype._refresh = function () {
+
+  }
+
+  $.ui.RingMenu.prototype.refresh = function () {
+    this._refresh();
   };
 
   $.ui.RingMenu.prototype.iconOf = function (handler) {
@@ -449,7 +461,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     this._destinationRadius = this.maxRadius;
     this._destinationOpacity = 255;
     this._destinationAngle = this._angleFor(this.index());
-    this._angle =  this._destinationAngle + Math.PI * time / 30;
+    this._angle =  this._angle + Math.PI * time / 30;
     this._animationTime = 0;
     if (time <= 0) {
       this._opacity = this._destinationOpacity;
@@ -697,6 +709,10 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     this.scale.y = this.scale.x;
     this.opacity = this._menu.opacity * (this._menu.isItemEnabled(this._name) ? 1 : 0.5);
   };
+
+  $.ui.RingMenu.Button.prototype.redraw = function () {
+
+  }
 
   $.ui.RingMenu.Button.prototype.updateHelp = function (window) {
     window.setText(this._menu.text(this._name));

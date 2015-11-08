@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Menu Party
 // D$E_RingMenuParty.js
-// Version 1.1.0
+// Version 1.2.1
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -112,6 +112,7 @@ PluginManager.register("D$E_RingMenuParty", "1.0.0", {
       this._active = false;
       this._formationMode = false;
       this._pendingIndex = -1;
+      this.selectLast();
   }
 
   MVC.accessor(Window_MenuStatus.prototype, 'formationMode');
@@ -128,10 +129,6 @@ PluginManager.register("D$E_RingMenuParty", "1.0.0", {
     return this._pendingIndex;
   }
 
-  $.ui.RingMenu.prototype.redrawItem = function (index) {
-
-  }
-
   $.ui.RingMenu.prototype.setPendingIndex = function (index) {
     this._pendingIndex = index;
   }
@@ -139,14 +136,6 @@ PluginManager.register("D$E_RingMenuParty", "1.0.0", {
   $.ui.RingMenu.Party.prototype._createButton = function (text, name, enabled, icon) {
     return new $.ui.RingMenu.Party.Button(this, name);
   }
-
-  $.ui.RingMenu.Party.prototype._refresh = function () {
-
-  }
-
-  $.ui.RingMenu.Party.prototype.refresh = function () {
-
-  };
 
   $.ui.RingMenu.Party.prototype.setFormationMode = function (formationMode) {
     this._formationMode = formationMode;
