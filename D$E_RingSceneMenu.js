@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Scene Menu
 // D$E_RingSceneMenu.js
-// Version 1.1.0
+// Version 1.2.0
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -69,6 +69,31 @@
  * Default: yes.
  * @default yes
  *
+ * @param Help Window X
+ * @desc The default x position of the help window
+ * Default: $gamePlayer.screenX() - 96
+ * @default $gamePlayer.screenX() - 96
+ *
+ * @param Help Window Y
+ * @desc The default y position of the help window
+ * Default: $gamePlayer.screenY() - ($gamePlayer.isInAirship() ? 48 : 16) + 32
+ * @default $gamePlayer.screenY() - ($gamePlayer.isInAirship() ? 48 : 16) + 32
+ *
+ * @param Help Window width
+ * @desc The default width of the help window
+ * Default: 320
+ * @default 320
+ *
+ * @param Help Window height
+ * @desc The default height of the help window
+ * Default: 72
+ * @default 72
+ *
+ * @param Help Window background opacity
+ * @desc The opacity of the background for help window. o is transparent,
+ * 255 means completely opaque. Default: 0
+ * @default 0
+ *
  * @help
  * =============================================================================
  * * FAQ
@@ -111,10 +136,7 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
   }
 
   var RingMenu = $.ui.RingMenu;
-  var params = RingMenu.readParams('D$E_RingSceneMenu', {
-    "Show help window": 'bool'
-  });
-  params.showHelpWindow = params.editorParams["Show help window"];
+  var params = RingMenu.readParams('D$E_RingSceneMenu');
 
   $.PARAMETERS['RingSceneMenu'] = params;
 
@@ -322,6 +344,9 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
       this.addWindow(this._helpWindow);
       this._commandWindow.setHelpWindow(this._helpWindow);
       this._statusWindow.setHelpWindow(this._helpWindow);
+      var rect = params.helpWindowRect();
+      this._helpWindow.move(rect.x, rect.y, rect.width, rect.height);
+      this._helpWindow.opacity = params.helpWindowOpacity();
     }
   }
 

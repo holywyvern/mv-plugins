@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Menu
 // D$E_RingMenu.js
-// Version 1.1.1
+// Version 1.2.0
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -702,6 +702,8 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     window.setText(this._menu.text(this._name));
   }
 
+  // Parameter reader
+
   $.ui.RingMenu.readParams = function (name, extraParams) {
     var editorParams = $.parametersFromSchema(PluginManager.parameters(name), $.merge({
       "Icons":         { type:'hash', of: { type:'str', after:  $.parseAsStringOrNumber }  },
@@ -712,7 +714,13 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
       "Starting Angle": { type: 'number', after: $.degToRad },
       "Rotation":       'number',
       "Scale Difference": 'number',
-      "Show Actor Sprite": 'bool'
+      "Show Actor Sprite": 'bool',
+      "Show help window": 'bool',
+      "Help Window X": 'function',
+      "Help Window Y": 'function',
+      "Help Window width": 'function',
+      "Help Window height": 'function',
+      "Help Window background opacity": 'function'
     }, extraParams || {}));
 
     return {
@@ -726,6 +734,15 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
       rotation: editorParams["Rotation"],
       scale: editorParams["Scale Difference"],
       showActorSprite: editorParams["Show Actor Sprite"],
+      showHelpWindow: editorParams["Show help window"],
+      helpWindowOpacity: editorParams["Help Window background opacity"],
+      helpWindowRect: function () {
+        return new Rectangle(this.editorParams["Help Window X"](),
+          this.editorParams["Help Window Y"](),
+          this.editorParams["Help Window width"](),
+          this.editorParams["Help Window height"]()
+        );
+      },
       make: function () {
         return {
           icons:  this.icons,
