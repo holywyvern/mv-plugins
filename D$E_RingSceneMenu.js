@@ -245,10 +245,10 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
       this._commandWindow = new Window_MenuCommand(this._windowLayer);
       this.addWindow(this._commandWindow);
       this._commandWindow.setHandler('item',      this._prepareMenu(this.commandItem));
-      this._commandWindow.setHandler('skill',     this.commandPersonal.bind(this));
-      this._commandWindow.setHandler('equip',     this.commandPersonal.bind(this));
-      this._commandWindow.setHandler('status',    this.commandPersonal.bind(this));
-      this._commandWindow.setHandler('formation', this.commandFormation.bind(this));
+      this._commandWindow.setHandler('skill',     this._prepareMenu(this.commandPersonal, true));
+      this._commandWindow.setHandler('equip',     this._prepareMenu(this.commandPersonal, true));
+      this._commandWindow.setHandler('status',    this._prepareMenu(this.commandPersonal, true));
+      this._commandWindow.setHandler('formation', this._prepareMenu(this.commandPersonal, true));
       this._commandWindow.setHandler('options',   this._prepareMenu(this.commandOptions));
       this._commandWindow.setHandler('save',      this._prepareMenu(this.commandSave));
       this._commandWindow.setHandler('gameEnd',   this._prepareMenu(this.commandGameEnd));
@@ -256,18 +256,21 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
 
   };
 
-  Scene_Menu.prototype._prepareMenu = function (action) {
+  Scene_Menu.prototype._prepareMenu = function (action, openStatus) {
     var self = this;
     return function () {
+      self._commandWindow.inverseClose();
+      if (openStatus) self._statusWindow.open();
       self._sceneDied = true;
       self._sceenDieAction =  action.bind(self);
     };
   }
 
-  var oldScene_Menu_popScene     = Scene_Menu.prototype.popScene;
-  var oldScene_Menu_update       = Scene_Menu.prototype.update;
-  var oldScene_Menu_onPersonalOk = Scene_Menu.prototype.onPersonalOk;
-  var oldScene_Menu_create       = Scene_Menu.prototype.create;
+  var oldScene_Menu_popScene         = Scene_Menu.prototype.popScene;
+  var oldScene_Menu_update           = Scene_Menu.prototype.update;
+  var oldScene_Menu_onPersonalOk     = Scene_Menu.prototype.onPersonalOk;
+  var oldScene_Menu_onPersonalCancel = Scene_Menu.prototype.onPersonalCancel;
+  var oldScene_Menu_create           = Scene_Menu.prototype.create;
 
   Scene_Menu.prototype.popScene = function () {
     this._commandWindow.close();
@@ -275,21 +278,32 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
     this._sceenDieAction = oldScene_Menu_popScene.bind(this);
   }
 
-  Scene_Menu.prototype.onPersonalOk = function() {
-    this._commandWindow.close();
+  Scene_Menu.prototype.onPersonalCancel = function () {
+    this._statusWindow.close();
+    this._commandWindow.open();
     this._sceneDied = true;
+    this._sceenDieAction = oldScene_Menu_onPersonalCancel.bind(this);
+  }
+
+  Scene_Menu.prototype.onPersonalOk = function() {
+    this._sceneDied = true;
+    this._statusWindow.inverseClose();
     this._sceenDieAction = oldScene_Menu_onPersonalOk.bind(this);
   };
 
   Scene_Menu.prototype.update = function () {
     if (this._sceneDied) {
-      if (!this._commandWindow.isAnimating()) {
+      if (this.canCallDieAnimation()) {
         this._sceenDieAction();
         this._sceneDied = false;
         return;
       }
     }
     oldScene_Menu_update.apply(this, arguments);
+  }
+
+  Scene_Menu.prototype.canCallDieAnimation = function () {
+    return !this._commandWindow.isAnimating() && !this._statusWindow.isAnimating();
   }
 
   Scene_Menu.prototype.createStatusWindow = function() {

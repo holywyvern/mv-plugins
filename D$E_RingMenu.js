@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Menu
 // D$E_RingMenu.js
-// Version 1.1.0
+// Version 1.1.1
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -84,6 +84,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     this._destinationAngle = this._angle;
     this.scale = options.scale || 0;
     this._targetIndex = this._index;
+    this._angle = this._destinationAngle;
     if (options.showActorSprite) {
       var char;
       if ($gamePlayer.isInVehicle()) {
@@ -435,12 +436,10 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
 
   $.ui.RingMenu.prototype.activate = function () {
     this._active = true;
-    this.open();
   }
 
   $.ui.RingMenu.prototype.deactivate = function () {
     this._active = false;
-    this.close();
   }
 
   $.ui.RingMenu.prototype.open = function (time) {
@@ -450,7 +449,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     this._destinationRadius = this.maxRadius;
     this._destinationOpacity = 255;
     this._destinationAngle = this._angleFor(this.index());
-    this._angle = this._destinationAngle + Math.PI * time / 60;
+    this._angle =  this._destinationAngle + Math.PI * time / 30;
     this._animationTime = 0;
     if (time <= 0) {
       this._opacity = this._destinationOpacity;
@@ -465,17 +464,17 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     if (arguments.length == 0) {
       time = 30;
     }
+    this._destinationRadius = new Point(0, 0);
+    this._destinationOpacity = 0;
+    this._destinationAngle = this._angle + Math.PI * time / 30;
+    this._animationTime = 0;
     if (time <= 0) {
-      this._radius = new Point(0, 0);
-      this._opacity = 0;
-      this._destinationRadius = this._radius;
-      this._destinationOpacity = this._opacity;
+      this._opacity = this._destinationOpacity;
+      this._radius = this._destinationRadius;
+      this._angle = this._destinationAngle;
       return;
     }
     this._animationTime = time;
-    this._destinationRadius = new Point(0, 0);
-    this._destinationOpacity = 0;
-    this._destinationAngle = this._angle + Math.PI * time / 60;
   };
 
 
@@ -483,19 +482,17 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     if (arguments.length == 0) {
       time = 30;
     }
-    var p = new Point(this.maxRadius.x * 2, this.maxRadius.y * 2);
+    this._destinationRadius = new Point(this.maxRadius.x * 2, this.maxRadius.y * 2);
+    this._destinationOpacity = 0;
+    this._destinationAngle = this._angleFor(this.index()) + Math.PI * time / 30;
+    this._animationTime = 0;
     if (time <= 0) {
-      this._radius  = p;
-      this._opacity = 0;
-      this._destinationRadius = this._radius;
-      this._destinationOpacity = this._opacity;
+      this._opacity = this._destinationOpacity;
+      this._radius = this._destinationRadius;
+      this._angle = this._destinationAngle;
       return;
     }
-    this._destinationRadius = p;
     this._animationTime = time;
-    this._destinationOpacity = 0;
-    this._destinationAngle = this._angle;
-    this._angle = this._angle - Math.PI * time / 60;
   };
 
   $.ui.RingMenu.prototype.turnTo = function (symbol, time) {
