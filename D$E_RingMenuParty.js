@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Menu Party
 // D$E_RingMenuParty.js
-// Version 1.2.1
+// Version 1.4.0
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -102,13 +102,13 @@ PluginManager.register("D$E_RingMenuParty", "1.0.0", {
   var RingMenu = $.ui.RingMenu;
   var params = RingMenu.readParams('D$E_RingMenuParty');
 
-  $.ui.RingMenu.Party = $.ui.RingMenu.extend();
+  // Party Window
+
+  $.ui.RingMenu.Party = $.ui.RingMenu.Command.extend();
 
   $.ui.RingMenu.Party.prototype.initialize = function(parent) {
-      this.parent = parent;
-      $.ui.RingMenu.prototype.initialize.call(this, params.make());
+      $.ui.RingMenu.Command.prototype.initialize.call(this, parent, params.make());
       this.close(0);
-      this._drawCommands();
       this._active = false;
       this._formationMode = false;
       this._pendingIndex = -1;
@@ -117,7 +117,7 @@ PluginManager.register("D$E_RingMenuParty", "1.0.0", {
 
   MVC.accessor(Window_MenuStatus.prototype, 'formationMode');
 
-  $.ui.RingMenu.Party.prototype._drawCommands = function () {
+  $.ui.RingMenu.Party.prototype.makeCommandList = function () {
     var self = this;
     $gameParty.members().forEach(function (member, i) {
       self.addCommand(member.name(), i, true);

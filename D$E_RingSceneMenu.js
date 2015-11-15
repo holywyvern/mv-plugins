@@ -263,6 +263,10 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
       this.selectSymbol(Window_MenuCommand._lastCommandSymbol);
   };
 
+  Window_MenuCommand.__inverseStart = false;
+
+  Scene_Menu.__startAtActorSelection = false;
+
   Scene_Menu.prototype.createCommandWindow = function() {
       this._commandWindow = new Window_MenuCommand(this._windowLayer);
       this.addWindow(this._commandWindow);
@@ -275,13 +279,33 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
       this._commandWindow.setHandler('save',      this._prepareMenu(this.commandSave));
       this._commandWindow.setHandler('gameEnd',   this._prepareMenu(this.commandGameEnd));
       this._commandWindow.setHandler('cancel',   this.popScene.bind(this));
-
+      if (Window_MenuCommand.__inverseStart) {
+        this._commandWindow.inverseClose(0);
+        if (!Scene_Menu.__startAtActorSelection) {
+          this._commandWindow.open();
+        }
+        Window_MenuCommand.__inverseStart = false;
+      }
   };
+
+  Scene_Menu.prototype.createStatusWindow = function() {
+      this._statusWindow = new $.ui.RingMenu.Party(this._windowLayer);
+      this.addWindow(this._statusWindow);
+      if (Scene_Menu.__startAtActorSelection) {
+        Scene_Menu.__startAtActorSelection = false;
+        this._commandWindow.deactivate();
+        this._statusWindow.activate();
+        this._statusWindow.inverseClose(0);
+        this._statusWindow.open();
+        this.bindStatus();
+      }
+  }
 
   Scene_Menu.prototype._prepareMenu = function (action, openStatus) {
     var self = this;
     return function () {
       self._commandWindow.inverseClose();
+      Window_MenuCommand.__inverseStart = true;
       if (openStatus) self._statusWindow.open();
       self._sceneDied = true;
       self._sceneDieAction =  action.bind(self);
@@ -301,15 +325,49 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
     this._sceneDieAction = oldScene_Menu_popScene.bind(this);
   }
 
+  Scene_Menu.prototype.isPersonalCommand = function () {
+    switch (this._commandWindow.currentSymbol()) {
+      case 'skill': case 'equip': case 'formation': case 'status':
+        return true;
+      default:
+        break;
+    }
+    return false;
+  }
+
+  Scene_Menu.prototype.bindStatus = function () {
+    if (this.isPersonalCommand()) {
+      this._bindPersonal();
+    } else {
+      this._bindFormation();
+    }
+  }
+
+  Scene_Menu.prototype._bindPersonal = function() {
+      this._statusWindow.setHandler('ok',     this.onPersonalOk.bind(this));
+      this._statusWindow.setHandler('cancel', this.onPersonalCancel.bind(this));
+  };
+
+  Scene_Menu.prototype._bindFormation = function() {
+      this._statusWindow.setHandler('ok',     this.onFormationOk.bind(this));
+      this._statusWindow.setHandler('cancel', this.onFormationCancel.bind(this));
+  };
+
   Scene_Menu.prototype.onPersonalCancel = function () {
+    console.log('a');
     this._statusWindow.close();
+    this._commandWindow.inverseClose(0);
+    this._commandWindow.selectLast();
     this._commandWindow.open();
+    this._commandWindow.activate();
     this._sceneDied = true;
     this._sceneDieAction = oldScene_Menu_onPersonalCancel.bind(this);
   }
 
   Scene_Menu.prototype.onPersonalOk = function() {
     this._sceneDied = true;
+    Scene_Menu.__startAtActorSelection = true;
+    Window_MenuCommand.__inverseStart = true;
     this._statusWindow.inverseClose();
     this._sceneDieAction = oldScene_Menu_onPersonalOk.bind(this);
   };
@@ -327,11 +385,6 @@ PluginManager.register("D$E_RingSceneMenu", "1.0.0", {
 
   Scene_Menu.prototype.canCallDieAnimation = function () {
     return !this._commandWindow.isAnimating() && !this._statusWindow.isAnimating();
-  }
-
-  Scene_Menu.prototype.createStatusWindow = function() {
-      this._statusWindow = new $.ui.RingMenu.Party(this._windowLayer);
-      this.addWindow(this._statusWindow);
   }
 
   Scene_Menu.prototype.create = function() {

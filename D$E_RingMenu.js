@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Menu
 // D$E_RingMenu.js
-// Version 1.3.0
+// Version 1.4.0
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -65,8 +65,9 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     this._commands = options.commands || [];
     this._icons    = options.icons || {};
     this._commandButtons = [];
-    if (this._refreshCommandIndexes) {
-      this._refreshCommandIndexes();
+    if (this.clearCommandList) {
+      this.clearCommandList();
+      this.drawAllItems();
     }
     this.maxRadius = options.radius || new Point(128, 48);
     this._index = options.index || 0;
@@ -158,24 +159,13 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     this._setupCommand(cmd, txt, 'cancel', true);
   }
 
-  $.ui.RingMenu.prototype._refreshCommandIndexes = function () {
+  $.ui.RingMenu.prototype.clearCommandList = function () {
     this._commandsByIndex = [];
     var self = this;
     this._commandButtons.forEach(function (i) {
       self.parent.removeChild(i);
     });
     this._commandButtons = [];
-    var commands = this._commands;
-    for (var commandName in commands) {
-      if (commands.hasOwnProperty(commandName)) {
-        this._commandsByIndex.push(commandName);
-        var cmd = this._createButton(this._texts[commandName], commandName, !this._disabled[commandName], this._icon[commandName]);
-        cmd.setClickHandler(this._handlers[commandName]);
-        this._commandButtons.push(cmd);
-        this.parent.addChild(cmd);
-        this.parent.children.sort(this.sort);
-      }
-    }
   };
 
   $.ui.RingMenu.prototype.redrawItem = function (index) {
@@ -239,7 +229,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     return this.isOpenAndActive() && (!this.isAnimating());
   };
 
-  $.ui.RingMenu.prototype.isItemEnabled = function (symbol) {
+  $.ui.RingMenu.prototype.isEnabled = function (symbol) {
     return !this._disabled[symbol];
   }
 
@@ -252,7 +242,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
   }
 
   $.ui.RingMenu.prototype.isCurrentItemEnabled = function () {
-    return this.isItemEnabled(this.command);
+    return this.isEnabled(this.command);
   };
 
   $.ui.RingMenu.prototype.addCommand = function (text, name, enabled, icon) {
@@ -294,11 +284,13 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
 
   $.ui.RingMenu.prototype.deleteCommand = function (name) {
     this._commands[name] = null;
-    this._refreshCommandIndexes();
+    this.clearCommandList();
+    this.drawAllItems();
   };
 
   $.ui.RingMenu.prototype.clearCommands = function (name) {
-    this._refreshCommandIndexes();
+    this.clearCommandList();
+    this.drawAllItems();
   };
 
   $.ui.RingMenu.prototype.playOkSound = function() {
@@ -579,6 +571,23 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     return this._angleFor(this.indexOf(handle));
   };
 
+  $.ui.RingMenu.prototype.drawAllItems = function () {
+    var commands = this._commands;
+    for (var commandName in commands) {
+      if (commands.hasOwnProperty(commandName)) {
+        this.drawItem(commandName);
+      }
+    }
+  }
+
+  $.ui.RingMenu.prototype.drawItem = function (commandName) {
+    this._commandsByIndex.push(commandName);
+    var cmd = this._createButton(this._texts[commandName], commandName, !this._disabled[commandName], this._icon[commandName]);
+    cmd.setClickHandler(this._handlers[commandName]);
+    this._commandButtons.push(cmd);
+    this.parent.addChild(cmd);
+    this.parent.children.sort(this.sort);
+  }
 
   // Button here
 
@@ -707,7 +716,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
 
     this.scale.x = 1.0 + (this.y - centre.y) * this._menu.scale / this._menu.maxRadius.y;
     this.scale.y = this.scale.x;
-    this.opacity = this._menu.opacity * (this._menu.isItemEnabled(this._name) ? 1 : 0.5);
+    this.opacity = this._menu.opacity * (this._menu.isEnabled(this._name) ? 1 : 0.5);
   };
 
   $.ui.RingMenu.Button.prototype.redraw = function () {
@@ -717,6 +726,82 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
   $.ui.RingMenu.Button.prototype.updateHelp = function (window) {
     window.setText(this._menu.text(this._name));
   }
+
+  // Command Window
+
+  $.ui.RingMenu.Command = $.ui.RingMenu.extend();
+
+  $.ui.RingMenu.Command.prototype.initialize = function(parent, params) {
+      this.parent = parent;
+      this._ext = {};
+      $.ui.RingMenu.prototype.initialize.call(this, params);
+      this.makeCommandList();
+  }
+
+  $.ui.RingMenu.Command.prototype.commandName = function(index) {
+      return this._texts[this.commandSymbol(index)];
+  };
+
+  $.ui.RingMenu.Command.prototype.commandSymbol = function(index) {
+      return this._commandsByIndex[index];
+  };
+
+  $.ui.RingMenu.Command.prototype.commandExt = function(index) {
+      return this._ext[this.commandSymbol(index)];
+  };
+
+  $.ui.RingMenu.Command.prototype.isCommandEnabled = function(index) {
+      return !this._disabled[this.commandSymbol(index)];
+  };
+
+  $.ui.RingMenu.Command.prototype.addCommand = function (text, name, enabled, ext, icon) {
+    if (typeof ext == 'undefined') {
+      ext = null;
+    }
+    this._ext[name] = icon;
+    $.ui.RingMenu.prototype.addCommand.call(this, text, name, enabled, icon || undefined);
+  }
+
+    $.ui.RingMenu.Command.prototype.data = function (index) {
+    return {
+      name: this.commandName(index),
+      text: this.commandSymbol(index),
+      ext:  this.commandExt(index),
+      enabled: this.isCommandEnabled(index)
+    };
+  }
+
+  $.ui.RingMenu.Command.prototype.currentData = function() {
+    return this.index() >= 0 ? this.data(this.index()) : null;
+  };
+
+  $.ui.RingMenu.Command.prototype.currentExt = function () {
+    return this.index() >= 0 ? this.commandExt(this.index()) : null;
+  }
+
+  $.ui.RingMenu.Command.prototype.findSymbol = function (symbol) {
+    return this.indexOf(symbol);
+  }
+
+  $.ui.RingMenu.Command.prototype.findExt = function (ext) {
+    var length = this._commandsByIndex.length;
+    for (var i = 0; i < length; ++i) {
+      var cmd = this._commandsByIndex[i];
+      if (this._ext[cmd] == ext) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  $.ui.RingMenu.Command.prototype.selectExt = function(ext) {
+      var index = this.findExt(ext);
+      if (index >= 0) {
+          this.select(index);
+      } else {
+          this.select(0);
+      }
+  };
 
   // Parameter reader
 
@@ -771,6 +856,82 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
         };
       }
     };
+  }
+
+  $.ui.RingMenu.Item = $.ui.RingMenu.extend();
+
+  $.ui.RingMenu.Item.prototype.initialize = function (parent, params) {
+    this.parent = parent;
+    $.ui.RingMenu.prototype.initialize.call(this, params);
+    this.close(0);
+    this._category = 'none';
+    this._data = [];
+  }
+
+  $.ui.RingMenu.Item.prototype.setCategory = function(category) {
+      if (this._category !== category) {
+          this._category = category;
+          this.refresh();
+          this.resetScroll();
+      }
+  };
+
+  $.ui.RingMenu.Item.prototype.maxItems = function() {
+      return this._data ? this._data.length : 1;
+  };
+
+  $.ui.RingMenu.Item.prototype.includes = function(item) {
+      switch (this._category) {
+      case 'item':
+          return DataManager.isItem(item) && item.itypeId === 1;
+      case 'weapon':
+          return DataManager.isWeapon(item);
+      case 'armor':
+          return DataManager.isArmor(item);
+      case 'keyItem':
+          return DataManager.isItem(item) && item.itypeId === 2;
+      default:
+          return false;
+      }
+  };
+
+  $.ui.RingMenu.Item.prototype.needsNumber = function() {
+      return true;
+  };
+
+  $.ui.RingMenu.Item.prototype.isEnabled = function(item) {
+      return $gameParty.canUse(item);
+  };
+
+  $.ui.RingMenu.Item.prototype.makeItemList = function() {
+      this._data = $gameParty.allItems().filter(function(item) {
+          return this.includes(item);
+      }, this);
+      if (this.includes(null)) {
+          this._data.push(null);
+      }
+  };
+
+  $.ui.RingMenu.Item.prototype.selectLast = function() {
+      var index = this._data.indexOf($gameParty.lastItem());
+      this.select(index >= 0 ? index : 0);
+  };
+
+  $.ui.RingMenu.Item.prototype.updateHelp = function() {
+      this.setHelpWindowItem(this.item());
+  };
+
+  $.ui.RingMenu.Item.prototype.refresh = function() {
+      this.makeItemList();
+      this.clearCommandList();
+      this.drawAllItems();
+  };
+
+  $.ui.RingMenu.Item.prototype.drawAllItems = function () {
+    this.addCommand();
+  }
+
+  $.ui.RingMenu.Item.prototype.drawItem = function (commandName) {
   }
 
   $.PARAMETERS['RingMenu'] = params;
