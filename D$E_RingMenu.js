@@ -154,7 +154,6 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
 
   $.ui.RingMenu.prototype.addCancelCommand = function () {
     var txt = $.ui.RingMenu.params.cancel;
-    console.log(txt);
     var cmd = new $.ui.RingMenu.Button(this, 'cancel');
     this._setupCommand(cmd, txt, 'cancel', true);
   }
@@ -173,7 +172,8 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
   }
 
   $.ui.RingMenu.prototype._refresh = function () {
-
+    this.clearCommandList();
+    this.drawAllItems();
   }
 
   $.ui.RingMenu.prototype.refresh = function () {
@@ -581,8 +581,10 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
   }
 
   $.ui.RingMenu.prototype.drawItem = function (commandName) {
+    console.log(this._icons);
+    console.log(commandName);
     this._commandsByIndex.push(commandName);
-    var cmd = this._createButton(this._texts[commandName], commandName, !this._disabled[commandName], this._icon[commandName]);
+    var cmd = this._createButton(this._texts[commandName], commandName, !this._disabled[commandName], this._icons[commandName]);
     cmd.setClickHandler(this._handlers[commandName]);
     this._commandButtons.push(cmd);
     this.parent.addChild(cmd);
@@ -921,17 +923,9 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
       this.setHelpWindowItem(this.item());
   };
 
-  $.ui.RingMenu.Item.prototype.refresh = function() {
-      this.makeItemList();
-      this.clearCommandList();
-      this.drawAllItems();
-  };
-
-  $.ui.RingMenu.Item.prototype.drawAllItems = function () {
-    this.addCommand();
-  }
-
-  $.ui.RingMenu.Item.prototype.drawItem = function (commandName) {
+  $.ui.RingMenu.Item.prototype._refresh = function () {
+    this.makeItemList();
+    $.ui.RingMenu.prototype._refresh.apply(this, arguments);
   }
 
   $.PARAMETERS['RingMenu'] = params;
