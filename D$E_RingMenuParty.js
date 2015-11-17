@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Menu Party
 // D$E_RingMenuParty.js
-// Version 1.4.0
+// Version 1.4.1
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -134,6 +134,9 @@ PluginManager.register("D$E_RingMenuParty", "1.0.0", {
   }
 
   $.ui.RingMenu.Party.prototype._createButton = function (text, name, enabled, icon) {
+    if (name == 'cancel') {
+      return new $.ui.RingMenu.Button(this, name);
+    }
     return new $.ui.RingMenu.Party.Button(this, name);
   }
 

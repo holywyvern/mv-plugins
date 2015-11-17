@@ -1,7 +1,7 @@
 //==============================================================================
 // Dragon Engine (D$E) Ring Menu
 // D$E_RingMenu.js
-// Version 1.4.0
+// Version 1.5.0
 //==============================================================================
 /*
  * Copyright 2015 Ramiro Rojo
@@ -24,6 +24,12 @@
  * @desc The text used by the cancel command.
  * Use it as your own language.
  * @default Cancel
+ *
+ * @param Default Rotation Time
+ * @desc The time the ring manu takes to change to the next item in frames.
+ * Default: 30
+ * @default 30
+ *
  */
 if (!window.D$E) {
   throw new Error("This plugin requires the 'Dragon Engine (D$E)' to work properly! Ensure your plugin list, or order of plugins.");
@@ -43,11 +49,13 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
   "use strict";
 
   var editorParams = $.parametersFromSchema(PluginManager.parameters('D$E_RingMenu'), {
-    "Cancel Text": 'string'
+    "Cancel Text": 'string',
+    "Default Rotation Time": 'number'
   });
 
   var params = {
-    cancel: editorParams["Cancel Text"]
+    cancel: editorParams["Cancel Text"],
+    defaultTime: editorParams["Default Rotation Time"]
   };
 
   $.ui = $.ui || {};
@@ -448,7 +456,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
 
   $.ui.RingMenu.prototype.open = function (time) {
     if (arguments.length == 0) {
-      time = 30;
+      time = params.defaultTime;
     }
     this._destinationRadius = this.maxRadius;
     this._destinationOpacity = 255;
@@ -466,7 +474,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
 
   $.ui.RingMenu.prototype.close = function (time) {
     if (arguments.length == 0) {
-      time = 30;
+      time = params.defaultTime;
     }
     this._destinationRadius = new Point(0, 0);
     this._destinationOpacity = 0;
@@ -484,7 +492,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
 
   $.ui.RingMenu.prototype.inverseClose = function (time) {
     if (arguments.length == 0) {
-      time = 30;
+      time = params.defaultTime;
     }
     this._destinationRadius = new Point(this.maxRadius.x * 2, this.maxRadius.y * 2);
     this._destinationOpacity = 0;
@@ -511,9 +519,9 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     }
     if (arguments.length == 1) {
       if ((n == this.length - 1) || (n == - this.length + 1) ) {
-        time = 30;
+        time = params.defaultTime;
       } else {
-        time = 30 * Math.abs(n);
+        time = params.defaultTime * Math.abs(n);
       }
 
     }
@@ -527,7 +535,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
 
   $.ui.RingMenu.prototype.turnLeft = function (time) {
     if (arguments.length == 0) {
-      time = 30;
+      time = params.defaultTime;
     }
     this._animationTime = time;
     this._destinationAngle = this._nextLeftAngle();
@@ -540,7 +548,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
 
   $.ui.RingMenu.prototype.turnRight = function (time) {
     if (arguments.length == 0) {
-      time = 30;
+      time = params.defaultTime;
     }
     SoundManager.playCursor();
     this._animationTime = time;
@@ -581,8 +589,6 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
   }
 
   $.ui.RingMenu.prototype.drawItem = function (commandName) {
-    console.log(this._icons);
-    console.log(commandName);
     this._commandsByIndex.push(commandName);
     var cmd = this._createButton(this._texts[commandName], commandName, !this._disabled[commandName], this._icons[commandName]);
     cmd.setClickHandler(this._handlers[commandName]);
