@@ -288,9 +288,7 @@ var D$E = (function (oldD$E) {
   params.allowPluginCommands = $.naturalBoolean(editorParams["Allow Plugin Commands"] || 'no');
   params.pluginCommandName = editorParams['Plugin Command name'] || 'D$E';
 
-  if (params.allowPluginCommands) {
-    $.addCommandHandle = addCommandHandle;
-  } else {
+  if (!params.allowPluginCommands) {
     $.addCommandHandle = function () {};
   }
 
