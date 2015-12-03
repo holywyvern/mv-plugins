@@ -597,6 +597,10 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     this.parent.children.sort(this.sort);
   }
 
+  $.ui.RingMenu.prototype.resetScroll = function () {
+    this.index = 0;
+  }
+
   // Button here
 
   $.ui.RingMenu.Button = MVC.extend(Sprite_Button);
@@ -866,9 +870,11 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     };
   }
 
-  $.ui.RingMenu.Item = $.ui.RingMenu.extend();
+  // Base window used for skills and items
 
-  $.ui.RingMenu.Item.prototype.initialize = function (parent, params) {
+  $.ui.RingMenu.ItemBase = $.ui.RingMenu.extend();
+
+  $.ui.RingMenu.ItemBase.prototype.initialize = function (parent, params) {
     this.parent = parent;
     $.ui.RingMenu.prototype.initialize.call(this, params);
     this.close(0);
@@ -876,7 +882,7 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
     this._data = [];
   }
 
-  $.ui.RingMenu.Item.prototype.setCategory = function(category) {
+  $.ui.RingMenu.ItemBase.prototype.setCategory = function(category) {
       if (this._category !== category) {
           this._category = category;
           this.refresh();
@@ -884,8 +890,50 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
       }
   };
 
-  $.ui.RingMenu.Item.prototype.maxItems = function() {
+  $.ui.RingMenu.ItemBase.prototype.maxItems = function() {
       return this._data ? this._data.length : 1;
+  };
+
+  $.ui.RingMenu.ItemBase.prototype.includes = function(item) {
+      return false;
+  };
+
+  $.ui.RingMenu.ItemBase.prototype.needsNumber = function() {
+      return true;
+  };
+
+  $.ui.RingMenu.ItemBase.prototype.isEnabled = function(item) {
+      return $gameParty.canUse(item);
+  };
+
+  $.ui.RingMenu.ItemBase.prototype.makeItemList = function() {
+  };
+
+  $.ui.RingMenu.ItemBase.prototype.selectLast = function() {
+      var index = this._data.indexOf($gameParty.lastItem());
+      this.select(index >= 0 ? index : 0);
+  };
+
+  $.ui.RingMenu.ItemBase.prototype.updateHelp = function() {
+      this.setHelpWindowItem(this.item());
+  };
+
+  $.ui.RingMenu.ItemBase.prototype._refresh = function () {
+    this.makeItemList();
+    $.ui.RingMenu.prototype._refresh.apply(this, arguments);
+  }
+
+  // Item window
+
+  $.ui.RingMenu.Item  = $.ui.RingMenu.ItemBase.extend();
+
+  $.ui.RingMenu.Item.prototype.makeItemList = function() {
+      this._data = $gameParty.allItems().filter(function(item) {
+          return this.includes(item);
+      }, this);
+      if (this.includes(null)) {
+          this._data.push(null);
+      }
   };
 
   $.ui.RingMenu.Item.prototype.includes = function(item) {
@@ -903,36 +951,45 @@ PluginManager.register("D$E_RingMenu", "1.0.0", {
       }
   };
 
-  $.ui.RingMenu.Item.prototype.needsNumber = function() {
-      return true;
-  };
+  // Skill window
 
-  $.ui.RingMenu.Item.prototype.isEnabled = function(item) {
-      return $gameParty.canUse(item);
-  };
+  $.ui.RingMenu.Skill = $.ui.RingMenu.ItemBase.extend();
 
-  $.ui.RingMenu.Item.prototype.makeItemList = function() {
-      this._data = $gameParty.allItems().filter(function(item) {
-          return this.includes(item);
-      }, this);
-      if (this.includes(null)) {
-          this._data.push(null);
+  $.ui.RingMenu.Skill.prototype.initialize = function () {
+    this._actor = null;
+    this._stypeId = 0;
+    $.ui.RingMenu.ItemBase.prototype.initialize.apply(this, arguments);
+  }
+
+  $.ui.RingMenu.Skill.prototype.setActor = function (actor) {
+    if (this._actor !== actor) {
+        this._actor = actor;
+        this.refresh();
+        this.resetScroll();
+    }
+  }
+
+  $.ui.RingMenu.Skill.prototype.setStypeId = function(stypeId) {
+      if (this._stypeId !== stypeId) {
+          this._stypeId = stypeId;
+          this.refresh();
+          this.resetScroll();
       }
   };
 
-  $.ui.RingMenu.Item.prototype.selectLast = function() {
-      var index = this._data.indexOf($gameParty.lastItem());
-      this.select(index >= 0 ? index : 0);
+  $.ui.RingMenu.Skill.prototype.makeItemList = function() {
+    if (this._actor) {
+        this._data = this._actor.skills().filter(function(item) {
+            return this.includes(item);
+        }, this);
+    } else {
+        this._data = [];
+    }
   };
 
-  $.ui.RingMenu.Item.prototype.updateHelp = function() {
-      this.setHelpWindowItem(this.item());
+  $.ui.RingMenu.Skill.prototype.includes = function(item) {
+      return item && item.stypeId === this._stypeId;
   };
-
-  $.ui.RingMenu.Item.prototype._refresh = function () {
-    this.makeItemList();
-    $.ui.RingMenu.prototype._refresh.apply(this, arguments);
-  }
 
   $.PARAMETERS['RingMenu'] = params;
 
